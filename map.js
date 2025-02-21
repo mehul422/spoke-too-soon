@@ -45,22 +45,33 @@ map.on('load', () => {
                         Math.abs(endedMinutes - timeFilter) <= 60
                     );
                 });
-
+        
+            console.log("🕒 Time Filter:", timeFilter);
+            console.log("🔄 Filtered Trips Count:", filteredTrips.length);
+        
             filteredArrivals = d3.rollup(filteredTrips, v => v.length, d => d.end_station_id);
             filteredDepartures = d3.rollup(filteredTrips, v => v.length, d => d.start_station_id);
-
+        
+            console.log("🚴‍♂️ Filtered Arrivals Map:", filteredArrivals);
+            console.log("🚴‍♀️ Filtered Departures Map:", filteredDepartures);
+        
             filteredStations = stations.map(station => {
                 let id = station.short_name;
+                let arrivals = filteredArrivals.get(id) ?? 0;
+                let departures = filteredDepartures.get(id) ?? 0;
+                let total = arrivals + departures;
+        
                 return {
                     ...station,
-                    arrivals: filteredArrivals.get(id) ?? 0,
-                    departures: filteredDepartures.get(id) ?? 0,
-                    totalTraffic: (filteredArrivals.get(id) ?? 0) + (filteredDepartures.get(id) ?? 0)
+                    arrivals: arrivals,
+                    departures: departures,
+                    totalTraffic: total
                 };
             });
-
+        
             console.log("🚦 Filtered Stations Traffic:", filteredStations.map(s => s.totalTraffic));
         }
+        
 
         filterTripsByTime();
 
