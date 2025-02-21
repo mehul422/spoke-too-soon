@@ -30,6 +30,22 @@ html, body {
     stroke-width: 1px;
     pointer-events: auto;
 }
+header {
+    display: flex;
+    align-items: baseline;
+    gap: 1em;
+}
+label {
+    margin-left: auto;
+}
+time, em {
+    display: block;
+}
+em {
+    color: gray;
+    font-style: italic;
+}
+
 
 
   
