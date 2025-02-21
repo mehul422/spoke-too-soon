@@ -12,38 +12,6 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => { 
-    // Add Boston bike lanes
-    map.addSource('boston_data_route', {
-        type: 'geojson',
-        data: 'https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022.geojson?...'
-    });
-    map.addLayer({
-        id: 'boston-bike-lanes',
-        type: 'line',
-        source: 'boston_data_route',
-        paint: {
-            'line-color': '#32D400',
-            'line-width': 5,
-            'line-opacity': 0.6
-        }
-    });
-
-    // Add Cambridge bike lanes
-    map.addSource('cambridge_data_route', {
-        type: 'geojson',
-        data: 'https://raw.githubusercontent.com/cambridgegis/cambridgegis_data/main/Recreation/Bike_Facilities/RECREATION_BikeFacilities.geojson'
-    });
-    map.addLayer({
-        id: 'cambridge-bike-lanes',
-        type: 'line',
-        source: 'cambridge_data_route',
-        paint: {
-            'line-color': '#32D400',
-            'line-width': 5,
-            'line-opacity': 0.6
-        }
-    });
-
     // Fetch Bluebikes station and trip data
     const INPUT_BLUEBIKES_CSV_URL = 'https://dsc106.com/labs/lab07/data/bluebikes-stations.json';
     const INPUT_TRAFFIC_CSV_URL = 'https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv';
@@ -54,7 +22,6 @@ map.on('load', () => {
     ]).then(([jsonData, trips]) => {
         let stations = jsonData.data.stations;
 
-        // Convert trip start & end times to Date objects
         trips.forEach(trip => {
             trip.started_at = new Date(trip.start_time);
             trip.ended_at = new Date(trip.end_time);
@@ -68,14 +35,9 @@ map.on('load', () => {
         let timeFilter = -1;
 
         function filterTripsByTime() {
-            console.log("Applying filter for time:", timeFilter);
-
             filteredTrips = timeFilter === -1
                 ? trips
                 : trips.filter(trip => {
-                    if (!trip.started_at || isNaN(trip.started_at.getTime())) return false;
-                    if (!trip.ended_at || isNaN(trip.ended_at.getTime())) return false;
-
                     const startedMinutes = minutesSinceMidnight(trip.started_at);
                     const endedMinutes = minutesSinceMidnight(trip.ended_at);
                     return (
@@ -83,9 +45,6 @@ map.on('load', () => {
                         Math.abs(endedMinutes - timeFilter) <= 60
                     );
                 });
-
-            console.log("Total Trips Before Filtering:", trips.length);
-            console.log("Filtered Trips:", filteredTrips.length);
 
             filteredArrivals = d3.rollup(filteredTrips, v => v.length, d => d.end_station_id);
             filteredDepartures = d3.rollup(filteredTrips, v => v.length, d => d.start_station_id);
@@ -100,46 +59,48 @@ map.on('load', () => {
                 };
             });
 
-            console.log("Updated Station Traffic:", filteredStations.map(s => s.totalTraffic));
+            console.log("🚦 Filtered Stations Traffic:", filteredStations.map(s => s.totalTraffic));
         }
 
-        // Initial filter (all trips)
         filterTripsByTime();
 
-        // Define dynamic radius scale
+        // Define radius scale
         let radiusScale = d3.scaleSqrt()
             .domain([0, d3.max(filteredStations, d => d.totalTraffic) || 1])
-            .range([3, 50]);
+            .range([5, 50]);  // 🔹 Increased minimum radius
 
         const svg = d3.select('#map').select('svg');
-        let circles = svg.selectAll('circle')
-            .data(filteredStations)
-            .enter()
-            .append('circle')
-            .attr('fill', 'steelblue')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 1)
-            .attr('opacity', 0.8);
-
+        
         function getCoords(station) {
             const point = new mapboxgl.LngLat(+station.lon, +station.lat);
             const { x, y } = map.project(point);
             return { cx: x, cy: y };
         }
 
-        function updatePositions() {
-            circles
+        function updateCircles() {
+            console.log("🔄 Updating Circles...");
+
+            const circles = svg.selectAll('circle')
+                .data(filteredStations, d => d.short_name);
+
+            circles.enter()
+                .append('circle')
+                .attr('fill', 'steelblue')
+                .attr('stroke', 'white')
+                .attr('stroke-width', 1)
+                .attr('opacity', 0.8)
+                .merge(circles)  // 🔹 Merge enter and update
+                .transition().duration(500)
                 .attr('cx', d => getCoords(d).cx)
                 .attr('cy', d => getCoords(d).cy)
-                .attr('r', d => radiusScale(d.totalTraffic))
-                .each(function(d) {
-                    d3.select(this).select('title').text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
-                });
+                .attr('r', d => radiusScale(d.totalTraffic));
+
+            circles.exit().remove();
         }
 
-        updatePositions();
-        map.on('move', updatePositions);
-        map.on('zoom', updatePositions);
+        updateCircles();
+        map.on('move', updateCircles);
+        map.on('zoom', updateCircles);
 
         const timeSlider = document.getElementById('time-slider');
         const selectedTime = document.getElementById('selected-time');
@@ -162,23 +123,18 @@ map.on('load', () => {
 
             filterTripsByTime();
 
-            // Ensure max traffic is never 0
             const maxTraffic = d3.max(filteredStations, d => d.totalTraffic) || 1;
             radiusScale.domain([0, maxTraffic]);
-            console.log("Max Traffic:", maxTraffic);
-            console.log("Radius Scale Range:", radiusScale.range());
 
-            // Update circle sizes
-            circles.data(filteredStations)
-                .transition().duration(500)
-                .attr('r', d => radiusScale(d.totalTraffic));
+            console.log("📏 Max Traffic:", maxTraffic);
+            console.log("🎯 Updated Radius Scale:", radiusScale.range());
 
-            updatePositions();
+            updateCircles();
         }        
 
         timeSlider.addEventListener('input', updateTimeDisplay);
         updateTimeDisplay();
     }).catch(error => {
-        console.error('Error loading JSON or CSV:', error);
+        console.error('❌ Error loading JSON or CSV:', error);
     });
 });
