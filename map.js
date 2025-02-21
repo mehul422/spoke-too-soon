@@ -38,7 +38,7 @@ map.on('load', () => {
         type: 'line',
         source: 'cambridge_data_route',
         paint: {
-            'line-color': '#FF5733', // Different color to distinguish
+            'line-color': '#32D400',
             'line-width': 5,
             'line-opacity': 0.6
         }
