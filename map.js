@@ -45,6 +45,8 @@ map.on('load', () => {
     });        
 });
 
+const INPUT_BLUEBIKES_CSV_URL = 'https://dsc106.com/labs/lab07/data/bluebikes-stations.json'
+
 map.on('load', () => {
     // Load the nested JSON file
     const jsonurl = INPUT_BLUEBIKES_CSV_URL
@@ -53,7 +55,8 @@ map.on('load', () => {
     }).catch(error => {
       console.error('Error loading JSON:', error);  // Handle errors if JSON loading fails
     });
-  });
 
-const stations = jsonData.data.stations;
-console.log('Stations Array:', stations);  
+    const stations = jsonData.data.stations;
+    onsole.log('Stations Array:', stations);
+    
+  });
