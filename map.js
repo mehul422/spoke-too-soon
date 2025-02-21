@@ -44,3 +44,16 @@ map.on('load', () => {
         }
     });        
 });
+
+map.on('load', () => {
+    // Load the nested JSON file
+    const jsonurl = INPUT_BLUEBIKES_CSV_URL
+    d3.json(jsonurl).then(jsonData => {
+      console.log('Loaded JSON Data:', jsonData);  // Log to verify structure
+    }).catch(error => {
+      console.error('Error loading JSON:', error);  // Handle errors if JSON loading fails
+    });
+  });
+
+const stations = jsonData.data.stations;
+console.log('Stations Array:', stations);  
