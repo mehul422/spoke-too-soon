@@ -149,19 +149,21 @@ map.on('load', () => {
                 selectedTime.textContent = formatTime(timeFilter);
                 anyTimeLabel.style.display = 'none';
             }
-
+        
             filterTripsByTime();
-
-            // Update radius scale dynamically
+        
+            // **Recompute radiusScale** based on the new filtered data
             radiusScale.domain([0, d3.max(filteredStations, d => d.totalTraffic) || 1])
-                .range(timeFilter === -1 ? [2, 25] : [3, 50]);
-
+                .range(timeFilter === -1 ? [2, 25] : [3, 50]);  // Ensure correct range
+        
+            // **Update circles with new radius**
             circles.data(filteredStations)
+                .join("circle")  // Ensure new data joins properly
                 .transition().duration(500)
                 .attr('r', d => radiusScale(d.totalTraffic));
-
+        
             updatePositions();
-        }
+        }        
 
         timeSlider.addEventListener('input', updateTimeDisplay);
         updateTimeDisplay();
