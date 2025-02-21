@@ -3,9 +3,9 @@ mapboxgl.accessToken = 'pk.eyJ1IjoibWV2ZXJtYSIsImEiOiJjbTdlZ3N2c3YwZXNvMnNxM3E0a
 
 // Initialize the map
 const map = new mapboxgl.Map({
-    container: 'map', // ID of the div where the map will render
-    style: 'mapbox://styles/mapbox/satellite-streets-v12', // Map style
-    center: [-71.09415, 42.36027], // [longitude, latitude]
+    container: 'map', 
+    style: 'mapbox://styles/mapbox/satellite-streets-v12',
+    center: [-71.09415, 42.36027],
     zoom: 12,
     minZoom: 5,
     maxZoom: 18
@@ -68,9 +68,14 @@ map.on('load', () => {
         let timeFilter = -1;
 
         function filterTripsByTime() {
+            console.log("Applying filter for time:", timeFilter);
+
             filteredTrips = timeFilter === -1
                 ? trips
                 : trips.filter(trip => {
+                    if (!trip.started_at || isNaN(trip.started_at.getTime())) return false;
+                    if (!trip.ended_at || isNaN(trip.ended_at.getTime())) return false;
+
                     const startedMinutes = minutesSinceMidnight(trip.started_at);
                     const endedMinutes = minutesSinceMidnight(trip.ended_at);
                     return (
@@ -78,6 +83,9 @@ map.on('load', () => {
                         Math.abs(endedMinutes - timeFilter) <= 60
                     );
                 });
+
+            console.log("Total Trips Before Filtering:", trips.length);
+            console.log("Filtered Trips:", filteredTrips.length);
 
             filteredArrivals = d3.rollup(filteredTrips, v => v.length, d => d.end_station_id);
             filteredDepartures = d3.rollup(filteredTrips, v => v.length, d => d.start_station_id);
@@ -91,15 +99,17 @@ map.on('load', () => {
                     totalTraffic: (filteredArrivals.get(id) ?? 0) + (filteredDepartures.get(id) ?? 0)
                 };
             });
+
+            console.log("Updated Station Traffic:", filteredStations.map(s => s.totalTraffic));
         }
 
         // Initial filter (all trips)
         filterTripsByTime();
 
         // Define dynamic radius scale
-        const radiusScale = d3.scaleSqrt()
+        let radiusScale = d3.scaleSqrt()
             .domain([0, d3.max(filteredStations, d => d.totalTraffic) || 1])
-            .range(timeFilter === -1 ? [2, 25] : [3, 50]);
+            .range([3, 50]);
 
         const svg = d3.select('#map').select('svg');
         let circles = svg.selectAll('circle')
@@ -149,19 +159,20 @@ map.on('load', () => {
                 selectedTime.textContent = formatTime(timeFilter);
                 anyTimeLabel.style.display = 'none';
             }
-        
+
             filterTripsByTime();
-        
-            // **Recompute radiusScale** based on the new filtered data
-            radiusScale.domain([0, d3.max(filteredStations, d => d.totalTraffic) || 1])
-                .range(timeFilter === -1 ? [2, 25] : [3, 50]);  // Ensure correct range
-        
-            // **Update circles with new radius**
+
+            // Ensure max traffic is never 0
+            const maxTraffic = d3.max(filteredStations, d => d.totalTraffic) || 1;
+            radiusScale.domain([0, maxTraffic]);
+            console.log("Max Traffic:", maxTraffic);
+            console.log("Radius Scale Range:", radiusScale.range());
+
+            // Update circle sizes
             circles.data(filteredStations)
-                .join("circle")  // Ensure new data joins properly
                 .transition().duration(500)
                 .attr('r', d => radiusScale(d.totalTraffic));
-        
+
             updatePositions();
         }        
 
