@@ -45,18 +45,23 @@ map.on('load', () => {
     });        
 });
 
-const INPUT_BLUEBIKES_CSV_URL = 'https://dsc106.com/labs/lab07/data/bluebikes-stations.json'
+const INPUT_BLUEBIKES_CSV_URL = 'https://dsc106.com/labs/lab07/data/bluebikes-stations.json';
 
 map.on('load', () => {
     // Load the nested JSON file
-    const jsonurl = INPUT_BLUEBIKES_CSV_URL
+    const jsonurl = INPUT_BLUEBIKES_CSV_URL;
+    
     d3.json(jsonurl).then(jsonData => {
-      console.log('Loaded JSON Data:', jsonData);  // Log to verify structure
+        console.log('Loaded JSON Data:', jsonData);  // Log to verify structure
+        
+        // Extract stations array INSIDE the .then() block
+        const stations = jsonData.data.stations;
+        console.log('Stations Array:', stations);
+        
+        // Now you can use 'stations' inside this block
     }).catch(error => {
-      console.error('Error loading JSON:', error);  // Handle errors if JSON loading fails
+        console.error('Error loading JSON:', error);  // Handle errors if JSON loading fails
     });
 
-    const stations = jsonData.data.stations;
-    onsole.log('Stations Array:', stations);
-    
-  });
+});
+
