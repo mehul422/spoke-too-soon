@@ -29,5 +29,18 @@
   });
 
   map.on('load', () => { 
-    
+    map.addSource('cambridge_data_route', {
+        type: 'geojson',
+        data: 'https://data.cambridgema.gov/api/geospatial/9aey-9g9p?method=export&format=GeoJSON'
+      });
+    map.addLayer({
+        id: 'bike-lanes',
+        type: 'line',
+        source: 'cambridge_data_route',
+        paint: {
+          'line-color': '#32D400',
+          'line-width': 5,
+          'line-opacity': 0.6
+        }
+      });        
   });
