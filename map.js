@@ -81,14 +81,20 @@ map.on('load', () => {
 
         // Append circles to the SVG for each station
         const circles = svg.selectAll('circle')
-            .data(stations)
-            .enter()
-            .append('circle')
-            .attr('r', d => radiusScale(d.totalTraffic))  // Adjust radius dynamically
-            .attr('fill', 'steelblue')  // Circle fill color
-            .attr('stroke', 'white')    // Circle border color
-            .attr('stroke-width', 1)    // Circle border thickness
-            .attr('opacity', 0.8);
+        .data(stations)
+        .enter()
+        .append('circle')
+        .attr('r', d => radiusScale(d.totalTraffic))  // Adjust radius dynamically
+        .attr('fill', 'steelblue')  // Circle fill color
+        .attr('stroke', 'white')    // Circle border color
+        .attr('stroke-width', 1)    // Circle border thickness
+        .attr('opacity', 0.8)
+        .each(function(d) {  // ✅ Now correctly placed
+            d3.select(this)
+            .append('title')
+            .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+        });
+
 
         // Function to convert station coordinates to pixel positions
         function getCoords(station) {

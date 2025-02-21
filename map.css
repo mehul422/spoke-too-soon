@@ -28,6 +28,7 @@ html, body {
     fill-opacity: 0.6; /* 60% opacity for better visibility */
     stroke: white;
     stroke-width: 1px;
+    pointer-events: auto;
 }
 
 
