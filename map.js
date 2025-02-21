@@ -12,38 +12,6 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => { 
-    // Add Boston bike lanes
-    map.addSource('boston_data_route', {
-        type: 'geojson',
-        data: 'https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022.geojson?...'
-    });
-    map.addLayer({
-        id: 'boston-bike-lanes',
-        type: 'line',
-        source: 'boston_data_route',
-        paint: {
-            'line-color': '#32D400',
-            'line-width': 5,
-            'line-opacity': 0.6
-        }
-    });
-
-    // Add Cambridge bike lanes
-    map.addSource('cambridge_data_route', {
-        type: 'geojson',
-        data: 'https://raw.githubusercontent.com/cambridgegis/cambridgegis_data/main/Recreation/Bike_Facilities/RECREATION_BikeFacilities.geojson'
-    });
-    map.addLayer({
-        id: 'cambridge-bike-lanes',
-        type: 'line',
-        source: 'cambridge_data_route',
-        paint: {
-            'line-color': '#32D400',
-            'line-width': 5,
-            'line-opacity': 0.6
-        }
-    });
-
     // Fetch Bluebikes station and trip data
     const INPUT_BLUEBIKES_CSV_URL = 'https://dsc106.com/labs/lab07/data/bluebikes-stations.json';
     const INPUT_TRAFFIC_CSV_URL = 'https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv';
@@ -79,13 +47,14 @@ map.on('load', () => {
                     );
                 });
 
+            // Update arrivals and departures based on filtered trips
             filteredArrivals = d3.rollup(filteredTrips, v => v.length, d => d.end_station_id);
             filteredDepartures = d3.rollup(filteredTrips, v => v.length, d => d.start_station_id);
 
             filteredStations = stations.map(station => {
                 let id = station.short_name;
                 return {
-                    ...station,
+                    ...station,  // Clone station to avoid modifying the original
                     arrivals: filteredArrivals.get(id) ?? 0,
                     departures: filteredDepartures.get(id) ?? 0,
                     totalTraffic: (filteredArrivals.get(id) ?? 0) + (filteredDepartures.get(id) ?? 0)
@@ -96,7 +65,7 @@ map.on('load', () => {
         // Initial filter (all trips)
         filterTripsByTime();
 
-        // Define dynamic radius scale
+        // Dynamic radius scale
         const radiusScale = d3.scaleSqrt()
             .domain([0, d3.max(filteredStations, d => d.totalTraffic) || 1])
             .range(timeFilter === -1 ? [2, 25] : [3, 50]);
@@ -122,9 +91,8 @@ map.on('load', () => {
                 .attr('cx', d => getCoords(d).cx)
                 .attr('cy', d => getCoords(d).cy)
                 .attr('r', d => radiusScale(d.totalTraffic))
-                .each(function(d) {
-                    d3.select(this).select('title').text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
-                });
+                .select('title')
+                .text(d => `${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
         }
 
         updatePositions();
