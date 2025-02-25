@@ -1,33 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bikewatching</title>
-    <link rel="stylesheet" href="global.css">
-    <link rel="stylesheet" href="map.css">
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-    <!-- Mapbox GL JS CSS -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="global.css">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <!-- Mapbox GL JS CSS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+
+
+  <title>Boston Bikewatching</title>
 </head>
 <body>
-    <header>
-        <h1>Bike Patterns in Boston 🚴</h1>
-        <label>
-            Filter by time: 
-            <input id="time-slider" type="range" min="-1" max="1440" value="-1">
-            <time id="selected-time">11:59 PM</time>
-            <em id="any-time">(any time)</em>
-        </label>
-    </header>
-    
-    <div id="map"><svg></svg></div>
+  <h1>🚴🏼 Bike Patterns in Boston</h1>
 
-    <!-- Mapbox GL JS JavaScript -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>  
+
+  <label>
+      Filter by time:
+    <input type="range" id="time-slider" min="-1" max="1440" value="-1" step="-1">
+    <time id="selected-time">11:59PM</time>
+    <em id="any-time">(any time)</em>
+  </label>
+
+
+  <div id="map">
+    <svg></svg>
+  </div>
+
+  <div class="legend">
+    <div style="--departure-ratio: 1">More Departures:
+      <span class = "departures"></span>
+    </div>
+
+    <div style="--departure-ratio: 0.5">Balanced:
+      <span class = "balanced"></span>
+    </div>
+    <div style="--departure-ratio: 0">More Arrivals:
+      <span class = "arrivals"></span>
+    </div>
+  </div>
+
     <!-- Load D3.js from CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <!-- Load your custom map initialization script -->
-    <script src="map.js"></script>  
+
+    <!-- Mapbox GL JS JavaScript -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <!-- Load your custom map initialization script --> 
+    <script src="map.js"></script>
+
 </body>
 </html>

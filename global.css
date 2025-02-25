@@ -1,10 +1,131 @@
 body {
-    font: 100%/1.5 system-ui, sans-serif;
-    display: flex;
-    flex-flow: column;
-    max-width: 80em;
-    min-height: 100vh;
-    box-sizing: border-box;
-    margin: auto;
-    padding: 1em;
-  }
+  font: 100%/1.5 system-ui, sans-serif;
+  display: flex;
+  flex-flow: column;
+  max-width: 80em;
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: auto;
+  padding: 1em;
+  justify-content: center; /* Center horizontally */
+  align-items: center;     /* Center vertically */
+}
+body,html{
+  margin: 0;
+  padding: 5;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center; /*Center horizontally */
+  align-items: center;     /*Center vertically*/
+}
+
+h1 {
+  font-family: 'Arial', sans-serif;
+  font-size: 40px;
+}
+
+#map {
+  width: 100%;    /* Adjust width to your desired size */
+  height: 100%;   /* Adjust height to your desired size */
+}
+
+#map svg {  
+/* background: yellow;
+opacity: 50%; 用来debug的*/ 
+
+position: absolute;
+z-index: 1;
+width:100%;
+height:100%;
+pointer-events: none;
+}
+
+
+#map circle {
+/* fill: rgba(252, 130, 8, 0.956); /* Change to any color you want */
+/* stroke: rgba(240, 177, 61, 0.956); */ 
+opacity: 70%;
+pointer-events: auto;
+
+--color-departures: rgba(178, 223, 138, 0.956);
+--color-arrivals: rgba(255, 127, 0, 0.956);
+--color: color-mix(
+  in oklch,
+  var(--color-departures) calc(100% * var(--departure-ratio)),
+  var(--color-arrivals)
+);
+fill: var(--color);
+}
+
+.legend {
+font-family: Arial, sans-serif;
+display: flex;
+flex-direction: row; /* Align items horizontally */
+gap: 100px;
+margin: 10px;
+}
+
+.legend div {
+display: flex;
+align-items: center;
+margin-bottom: 5px; /* Adds spacing between each div */
+}
+
+.legend span {
+display: inline-block;
+width: 20px; /* Size of the color box */
+height: 20px;
+margin-left: 8px; /* Space between text and color box */
+border-radius: 4px; /* Optional: rounded corners */
+}
+
+.legend div[style*="--departure-ratio: 1"] .departures {
+background-color:  rgba(178, 223, 138, 0.956); /* Red for more departures */
+margin-left: 5px;
+}
+
+.legend div[style*="--departure-ratio: 0.5"] .balanced {
+--color-departures: rgba(178, 223, 138, 0.956);
+--color-arrivals: rgba(255, 127, 0, 0.956);
+--color: color-mix(
+  in oklch,
+  var(--color-departures) calc(100% * var(--departure-ratio)),
+  var(--color-arrivals)
+);
+background-color: var(--color);
+margin-left: 5px;
+}
+
+.legend div[style*="--departure-ratio: 0"] .arrivals {
+background-color: rgba(255, 127, 0, 0.956); /* Red for more departures */
+margin-left: 5px;
+}
+
+header {
+display: flex;
+gap: 1em;
+align-items: baseline;
+}
+
+label {
+display: flex;
+align-items: baseline;
+gap: 0.5em;
+margin-left: auto;  /* Push to the right */
+}
+
+/* Styling for the time display */
+time {
+display: block;
+font-weight: bold;
+margin-top: 10px;
+margin-bottom:20px;
+}
+
+/* Styling for the "Any time" text */
+em {
+display: block;
+font-style: italic;
+color: #888; /* Lighter color for emphasis */
+}
